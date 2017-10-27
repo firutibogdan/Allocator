@@ -1,0 +1,81 @@
+
+	Am folosit o functie pentru fiecare task.
+	Functiile sunt declarate in func.h, iar sursa este in func.c.
+	
+	In main am variabile de tip int pe care le folosesc sa citesc indexul 
+sau valoarea sau marimea care urmeaza dupa task ("INITIALIZE 100").
+	Am folosit biblioteca stdlib pentru alocarea memoriei (calloc) si 
+biblioteca string.h pentru prelucrearea sirurilor de caractere.
+	Citesc un sir de maxim 20 de caractere in task. Acesta imi va arata ce 
+am de facut. Intru intr-un while si compar task cu fiecare dintre sirurile din 
+enunt ("INITIALIZE", "ALLOC", "DUMP" etc.).
+	Daca dupa sir urmeaza un numar, il citesc intr-o variabila.
+	Apelez functia care imi ofera rezolva task-ul.
+	Daca am gasit FINALIZE voi iesi din while, voi elibera memoria (free) si 
+voi termina programul.
+
+	Functiile:
+	
+	INITIALIZE - primeste ca paramteru n (marimea) si aloca o zona de n octeti 
+din memorie, punand fiecare octet pe 0 cu malloc.
+
+	FINALIZE - elibereaza memoria
+
+	DUMP - afiseaza cate 16 octeti pe rand din memorie
+	
+	ALLOC - initial verifica daca memoria este libera, prin verificarea primilor 
+		4 octeti din memorie (zona de gestiune)
+	      - Daca este libera si sunt suficienti octeti, pune pointerul p la 
+		sfarsitul celor 4 octeti si modifica primii 4 octeti cu index-ul 
+		la care incepe noua zona de memorie
+	      - Daca memoria nu e libera, parcurg zonele de memorie alocate in 
+		cautarea unei zone libere destul de mari
+	      - Daca gasesc o zona libera destul de mare intre 2 zone ocupate, 
+		ma opresc si pun pointerul p la inceputul acesteia, urmand a 
+		modifica datele din zona de gestiune a zonei anterioare si a zonei 
+		urmatoare (back este index-ul la care incepe zona de gestiune a 
+		zonei anterioare, backend este index-ul unde se termina zona anterioara 
+		si forward este index-ul la care incepe zona de gestiune a zonei 
+		urmatoare
+	      - La sfarsitut, daca nu am gasit o zona favorabila intre alte 2 zone, 
+		incerc sa vad daca am destui octeti liberi pentru a aloca o noua zona de
+		memorie
+
+	FILL - Functia care umple o zona de meomrie cu valori pe care le primeste ca 
+		parametru
+	
+	FREE - Functia care eliberaza zona de memorie
+	     - Pun pointerul p la incputul zinei de gestiune a zonei ce trebuie eliminata
+	     - Pastrez in 2 variabile back - inceputul zonei anterioare de memorie si 
+	       forward - inceputul zonei urmatoare de memorie
+	     - Folosesc q pentru a merge la cele 2 zone precizate mai sus si modific 
+	       zonele lor de gestiune (le actualizez sa nu mai arate spre zona stearsa)
+
+	SHOW - Primeste ca parametru value (0, 1 sau 2) care este o codiificare utilizata 
+	       de mine pentru a imi da seama daca dupa SHOW urma FREE, USAGE sau ALLOCATIONS
+	     - Pur si simplu parcurg zonele de memorie ca la ALLOC si vad cati octeti am liberi 
+	       cati octeti sunt ocupati, cate zone sunt libere, cate zone sunt ocupate
+
+	BONUS
+
+	ALLOCALIGNED - Face cam acelasi lucru cu ALLOC, doar ca verifica sa puna 
+		       primul octet alocat (de dupa zona de gestiune) pe o pozitie 
+		       divizibila cu value
+	
+	REALLOC - Functia utilizeaza FREE si ALLOC, calculeaza vechea lungime (oldsize) 
+		  si copiaza in noua zona datele din zona veche
+
+	VERIFY - Functia e facuta de mine si e utilizata pentru a vedea daca un octet 
+		 face parte dintr-o zona alocata de memorie sau nu
+	
+	SHOW MAP - Daca n / value e subunitar, inseamna ca voi afisa mai mult de n octeti 
+		 - count tine minte cati octeti am afisat (din value)
+		 - M-am folosit de o idee simpla...sa vad cati octeti consecutivi sunt 
+		   ocupati si cati sunt liberi si am gasit o formula pentru a afla 
+		   numarul de octeti pe care trbuie sa ii afisez
+		 - count1 si count2 sunt utilizati pentru a numara octetii liberi, respectiv 
+		   cei ocupati
+		 - Daca n / value e supraunitar, incep de la val0 (0) si imi impart 
+		   octetii in intervale. Primul interval este de la val0 (0) la 
+		   val1 (0 + n / value) si la fiecare pas val0 si val1 cresc cu n / value
+		 - Astfel stiu cati octeti v-a trebui sa afisez cu * sau cu .
